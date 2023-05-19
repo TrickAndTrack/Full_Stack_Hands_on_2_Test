@@ -1,13 +1,17 @@
 package com.reactjsfsaws.controller;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
+
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,13 +30,10 @@ import com.reactjsfsaws.entity.Users;
 import com.reactjsfsaws.repository.UsersRepository;
 import com.reactjsfsaws.service.UsersService;
 
-import jakarta.persistence.Id;
-
 
 
 
 @RestController
-
 @CrossOrigin("http://localhost:3000")
 @RequestMapping("/api/v0")
 public class UsersController {
@@ -50,7 +51,9 @@ public class UsersController {
 			List<Users> duplicateNumber = usersRepository.findByPhoneNumber(users.getPhoneNumber());
 
 			if (!duplicateNumber.isEmpty()) {
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mobile Number already exists");
+
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Phone Number already exists");
+
 
 			}
 			Users newUser = usersService.registerUser(users);
@@ -75,8 +78,9 @@ public class UsersController {
                                        @RequestParam("file")MultipartFile file) {
 		usersService.uploadUserProfileImage(Id, file);
     }
-	@GetMapping("/login")
-	public ResponseEntity<?> login(@RequestBody Users users) {
+	@PostMapping("/login")
+	public ResponseEntity<String> login(@RequestBody Users users) {
+
 		try {
 			
 			List<Users> checkNumber = usersRepository.findByPhoneNumber(users.getPhoneNumber());
@@ -141,7 +145,10 @@ public class UsersController {
 			Optional<Users> existingUser = usersRepository.findById(Id);
 			if (existingUser.isPresent()) {
 				user.setId(Id);
-				usersRepository.save(user);
+				user.setUpdatedBy(user.getFirstName());
+				user.setUpdatedDate(new Date());
+			    usersService.updateUser(user);
+
 				return new ResponseEntity<>(user, HttpStatus.OK);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
